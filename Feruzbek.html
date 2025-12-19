@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<title>Fizika Quiz | Online Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  font-family:Segoe UI,sans-serif;
+}
+.test{
+  width:95%;
+  max-width:850px;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(14px);
+  border-radius:20px;
+  padding:30px;
+  color:#fff;
+}
+h1,h2{text-align:center;margin:5px 0}
+.meta{
+  margin-top:15px;
+  padding:10px;
+  background:rgba(0,0,0,.35);
+  border-radius:12px;
+  font-size:15px;
+  display:flex;
+  justify-content:space-between;
+}
+.question{
+  font-size:21px;
+  margin:20px 0;
+}
+.options button{
+  width:100%;
+  margin:8px 0;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  text-align:left;
+  cursor:pointer;
+  background:#1e88e5;
+  color:#fff;
+}
+.options button.active{background:#43a047}
+.nav{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+.nav button{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-size:16px;
+  cursor:pointer;
+}
+#prev{background:#757575;color:#fff}
+#next{background:#fbc02d}
+#finish{background:#00c853;display:none}
+.result{font-size:24px;text-align:center;margin-top:25px}
+</style>
+</head>
+
+<body>
+<div class="test">
+
+<h1>Fizika Quiz</h1>
+<h2>Fizika – 40 ball</h2>
+
+<div class="meta">
+  <div id="section"></div>
+  <div id="point"></div>
+</div>
+
+<div class="question" id="q"></div>
+<div class="options" id="opts"></div>
+
+<div class="nav">
+  <button id="prev">⬅ Orqaga</button>
+  <button id="next">Keyingi ➜</button>
+  <button id="finish">Yakunlash ✔</button>
+</div>
+
+<div class="result" id="res"></div>
+</div>
+
+<script>
+const questions=[
+{q:"Issiqlik miqdori formulasi qaysi?",o:["Q=cmΔT","F=ma","P=UI","A=FS"],a:0,b:2,t:"Bilish"},
+{q:"Magnit induksiya qaysi harf bilan belgilanadi?",o:["E","F","B","I"],a:2,b:2,t:"Bilish"},
+{q:"Elektr toki nimani bildiradi?",o:["Zaryadlar harakati","Bosim","Issiqlik","Maydon"],a:0,b:2,t:"Bilish"},
+
+{q:"Grafikda tok kuchi vaqt bo‘yicha chiziqli oshgan. Qarshilik o‘zgarmasa kuchlanish qanday o‘zgaradi?",o:["O‘zgarmaydi","Chiziqli oshadi","Kamayadi","Nol bo‘ladi"],a:1,b:2.5,t:"Qo‘llash"},
+{q:"Harorat oshganda metall sim qarshiligi qanday o‘zgaradi?",o:["Kamayadi","O‘zgarmaydi","Ortadi","Nolga tushadi"],a:2,b:2.5,t:"Qo‘llash"},
+{q:"Grafikda tezlik o‘zgarmas. Jism harakati qanday?",o:["Sekinlashuvchi","Tekis","Tezlanishli","To‘xtagan"],a:1,b:2.5,t:"Qo‘llash"},
+{q:"Bosim oshsa gaz hajmi qanday o‘zgaradi?",o:["Ortadi","Kamayadi","O‘zgarmaydi","Nol bo‘ladi"],a:1,b:2.5,t:"Qo‘llash"},
+{q:"Tok kuchi 2 marta oshsa, quvvat qanday o‘zgaradi?",o:["2 marta","4 marta","O‘zgarmaydi","Kamayadi"],a:1,b:2.5,t:"Qo‘llash"},
+{q:"Grafikda yo‘l va vaqt to‘g‘ri chiziq. Harakat turi?",o:["Tekis","Tezlanishli","Sekinlashuvchi","Tasodifiy"],a:0,b:2.5,t:"Qo‘llash"},
+{q:"Harorat o‘zgarmasa bosim va hajm orasidagi bog‘lanish?",o:["To‘g‘ri","Teskari","Yo‘q","Kvadrat"],a:1,b:2.5,t:"Qo‘llash"},
+{q:"Zaryad 2 marta oshsa, elektr kuch?",o:["O‘zgarmaydi","2 marta","4 marta","Kamayadi"],a:1,b:2.5,t:"Qo‘llash"},
+{q:"Quvvat formulasi qaysi?",o:["P=UI","Q=cmΔT","F=ma","A=FS"],a:0,b:2.5,t:"Qo‘llash"},
+
+{q:"Nega kosmosda konveksiya sodir bo‘lmaydi?",o:["Bosim yo‘q","Zichlik farqi yo‘q","Modda yo‘q","Harorat past"],a:2,b:4.5,t:"Mulohaza"},
+{q:"Nima uchun issiq havo yuqoriga ko‘tariladi?",o:["Bosim sabab","Zichligi kichik","Og‘irligi katta","Magnit ta’sir"],a:1,b:4.5,t:"Mulohaza"}
+];
+
+let i=0;
+let answers=Array(questions.length).fill(null);
+
+function load(){
+ let x=questions[i];
+ section.innerText="Bo‘lim: "+x.t;
+ point.innerText="Ball: "+x.b;
+ q.innerText=(i+1)+". "+x.q;
+ opts.innerHTML="";
+ x.o.forEach((op,idx)=>{
+  let b=document.createElement("button");
+  b.innerText=String.fromCharCode(65+idx)+") "+op;
+  if(answers[i]===idx) b.classList.add("active");
+  b.onclick=()=>{answers[i]=idx;load();};
+  opts.appendChild(b);
+ });
+ prev.disabled=i===0;
+ next.style.display=i===questions.length-1?"none":"block";
+ finish.style.display=i===questions.length-1?"block":"none";
+}
+
+prev.onclick=()=>{if(i>0){i--;load();}};
+next.onclick=()=>{if(i<questions.length-1){i++;load();}};
+
+finish.onclick=()=>{
+ let total=0;
+ questions.forEach((q,idx)=>{
+  if(answers[idx]===q.a) total+=q.b;
+ });
+ res.innerText="Yakuniy natija: "+total+" / 40 ball";
+};
+
+load();
+</script>
+</body>
+</html>
